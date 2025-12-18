@@ -1,3 +1,5 @@
+# Does nothing but instruct flux to acknowledge of a new git repo to monitor for changes
+# but says nothing about what to do when a ne change is detected.
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: GitRepository
 metadata:
