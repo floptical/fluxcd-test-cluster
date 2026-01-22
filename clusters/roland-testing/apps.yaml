@@ -1,0 +1,14 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: apps-sync
+  namespace: flux-system
+spec:
+  interval: 1h
+  path: "./apps"
+  prune: true
+  dependsOn:
+    - name: infra-sync # Ensures Envoy is ready before Podinfo tries to route
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
