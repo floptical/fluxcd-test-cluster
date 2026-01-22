@@ -1,31 +1,41 @@
+# envoy-gateway needs a custom install method because of
+# the CRDs. This Kustomization file separately installs
+# envoy-gateway and the certs that it provisions
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: envoy-gateway-installer
+  name: envoy-gateway-controller
   namespace: flux-system
 spec:
-  interval: 1h
-  path: "./infrastructure/envoy-gateway"
-  # We exclude the subfolder so this sync ONLY sees the HelmRelease
-  commonMetadata:
-    labels:
-      app.kubernetes.io/part-of: envoy-gateway
+  interval: 15m
+  path: ./apps/envoy-gateway/overlays/dev
   prune: true
+  wait: true
   sourceRef:
     kind: GitRepository
     name: flux-system
+  postBuild:
+    substituteFrom:
+      - kind: ConfigMap
+        name: cluster-vars
 ---
+# This Kustomization creates just the custom resources
+# which relies on the CRDs, hence the dependsOn
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: envoy-gateway-config
+  name: envoy-gateway-resources
   namespace: flux-system
 spec:
   dependsOn:
-    - name: envoy-gateway-installer # <--- THE MAGIC LINE
-  interval: 1h
-  path: "./infrastructure/envoy-gateway/config"
+    - name: envoy-gateway-controller
+  interval: 15m
+  path: ./infrastructure/gateway
   prune: true
   sourceRef:
     kind: GitRepository
     name: flux-system
+  postBuild:
+    substituteFrom:
+      - kind: ConfigMap
+        name: cluster-vars
