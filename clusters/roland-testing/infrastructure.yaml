@@ -8,7 +8,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 15m
-  path: ./apps/envoy-gateway/overlays/dev
+  path: ./apps/envoy-gateway
   prune: true
   wait: true
   sourceRef:
