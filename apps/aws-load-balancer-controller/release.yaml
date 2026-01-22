@@ -1,0 +1,52 @@
+# How to manage values files. Ref: https://fluxcd.io/docs/guides/helmreleases/#refer-to-values-inside-the-chart
+# How to inject values: https://fluxcd.io/docs/guides/helmreleases/#cloud-storage
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: aws-load-balancer-controller
+  namespace: flux-system
+spec:
+  releaseName: aws-load-balancer-controller
+  targetNamespace: kube-system
+  interval: 15m
+  chart:
+    spec:
+      # Chart version is overwritten in overlay
+      chart: aws-load-balancer-controller
+      sourceRef:
+        kind: HelmRepository
+        name: eks
+        namespace: flux-system
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    vpcId: "${vpc_id}"
+    clusterName: "eks-${cluster_name}"
+    serviceAccount:
+      create: true
+      annotations:
+        eks.amazonaws.com/role-arn: "${alb_controller_role}"
+    # For some reason, the ALB controller tries to validate
+    # the webhooks of cert-manager and external-secrets which
+    # causes some race conditions on install. So, I just disable
+    # it for them.
+    enableServiceMutatorWebhook: false
+    webhookNamespaceSelectors:
+      - key: kubernetes.io/metadata.name
+        operator: NotIn
+        values:
+          - cert-manager
+          - external-secrets
+    webhookConfig:
+      disableIngressValidation: true
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        memory: 128Mi
