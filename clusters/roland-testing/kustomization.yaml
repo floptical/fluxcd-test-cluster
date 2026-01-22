@@ -4,8 +4,8 @@ kind: Kustomization
 resources:
   - ./infrastructure.yaml
   - ./apps.yaml
-  - ../infrastructure/gateway/
-  - ../infrastructure/namespaces/
-  - ../apps/aws-load-balancer-controller
-  - ../apps/podinfo/
-  - ../apps/envoy-gateway/
+  - ./infrastructure/gateway/
+  - ./infrastructure/namespaces/
+  - ./apps/aws-load-balancer-controller
+  - ./apps/podinfo/
+  - ./apps/envoy-gateway/
