@@ -1,52 +1,40 @@
----
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: envoy
+  name: envoy-gateway
   namespace: envoy
 spec:
   interval: 1h
+  targetNamespace: envoy-gateway-system
+  install:
+    createNamespace: true
   chart:
     spec:
-      chart: envoy
-      version: "10.x"
+      chart: envoy-gateway
+      version: "v1.2.x" # Use the Envoy Gateway chart, not raw Envoy
       sourceRef:
         kind: HelmRepository
-        name: bitnami
+        name: envoy-gateway # Points to the OCI repo above
       interval: 1h
-  targetNamespace: envoy
-  # Example minimal values override
-  values:
-    service:
-      type: LoadBalancer
-      annotations:
-        service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
 ---
-apiVersion: source.toolkit.fluxcd.io/v1
-kind: HelmRepository
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
 metadata:
-  name: podinfo
+  name: eg
+spec:
+  controllerName: gateway.envoyproxy.io/gatewayclass-controller
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: external-gateway
   namespace: envoy
 spec:
-  interval: 1h
-  url: https://stefanprodan.github.io/podinfo
----
-apiVersion: helm.toolkit.fluxcd.io/v2
-kind: HelmRelease
-metadata:
-  name: podinfo
-  namespace: default
-spec:
-  interval: 1h
-  chart:
-    spec:
-      chart: podinfo
-      version: "6.x"
-      sourceRef:
-        kind: HelmRepository
-        name: podinfo
-        namespace: default
-      interval: 1h
-  values:
-    ui:
-      message: "Hello from EKS + Flux"
+  gatewayClassName: eg
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: All # Allows podinfo in 'default' to connect
