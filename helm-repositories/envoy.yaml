@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: envoy 
+  labels:
+    pod-security.kubernetes.io/warn: restricted
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: envoy-gateway
+  namespace: envoy
+spec:
+  interval: 1h
+  type: oci
+  url: oci://docker.io/envoyproxy/gateway-helm
