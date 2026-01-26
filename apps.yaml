@@ -8,7 +8,9 @@ spec:
   path: "./apps"
   prune: true
   dependsOn:
-    - name: infra-sync # Ensures Envoy is ready before Podinfo tries to route
+  # apps.yaml
+  dependsOn:
+    - name: envoy-gateway-resources # Wait for the gateway to be ready
   sourceRef:
     kind: GitRepository
     name: flux-system
