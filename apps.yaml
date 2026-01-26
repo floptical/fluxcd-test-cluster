@@ -8,8 +8,6 @@ spec:
   path: "./apps"
   prune: true
   dependsOn:
-  # apps.yaml
-  dependsOn:
     - name: envoy-gateway-resources # Wait for the gateway to be ready
   sourceRef:
     kind: GitRepository
